@@ -2,14 +2,19 @@
 #include <filesystem>
 #include <string>
 #include <iostream>
+#include <fstream>
 #include <thread>
 
 using namespace std;
 
+void clearFile(string fileName) {
+	fstream target(fileName, ios::trunc);
+	target.close();
+}
+
 int main() {
 	filesystem::path program = "Lab4.exe";
-	
-	for (int priority = 0; priority < 100; priority++) {
+	for (int priority = 0; priority < 50; priority++) {
 		string writerArg;
 		int probability = rand() % 100;
 		if (probability < 50) {
@@ -23,7 +28,13 @@ int main() {
 		system(command.c_str());
 		cout << "Launching: " + command << endl;
 	}
-	this_thread::sleep_for(chrono::milliseconds(10000));
+	
+
+	while (true) {
+		this_thread::sleep_for(chrono::seconds(1));
+		clearFile("./some.txt");
+	} 
+
 	
 	return 0;
 }

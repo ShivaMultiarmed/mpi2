@@ -11,6 +11,8 @@ using namespace boost::interprocess;
 
 int main(int argc, char** argv)
 {
+	clock_t start = clock();
+	named_mutex::remove("file_mutex");
 	bool isWriter = string(argv[1]) == "--writer";
 	int priority = stoi(argv[2]);
 	const string filePath = "./some.txt";
@@ -35,14 +37,19 @@ int main(int argc, char** argv)
 				cout << "Reader with priority " << priority << " read " << "\"X\" from file: " << filePath << endl;
 			}
 		}
-		this_thread::sleep_for(chrono::milliseconds(10 * priority));
+		clock_t end = clock();
+		double time = static_cast<double>(end - start) / CLOCKS_PER_SEC;
+		if (time >= 100) {
+			break;
+		}
+		this_thread::sleep_for(chrono::milliseconds(100 * priority));
 	}
 	fileStream.close();
 
 	if (!isWriter) {
 		fstream resultStream("./results.txt", ios::out | ios::app);
-		resultStream << priority << " " << bytesRead << endl;
-		fileStream.close();
+		resultStream << priority << "\t" << bytesRead << endl;
+		resultStream.close();
 	}
 
 	return 0;
