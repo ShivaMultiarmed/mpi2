@@ -16,7 +16,8 @@ int main(int argc, char** argv)
 	const string filePath = "./some.txt";
 	named_mutex fileMutex(open_or_create, "file_mutex");
 	fstream fileStream;
-	for (int i = 0; i < 100; i++) {
+	int bytesRead = 0;
+	for (int i = 0; i < 1000; i++) {
 		if (isWriter) {
 			scoped_lock<named_mutex> lock(fileMutex);
 			fileStream = fstream(filePath, ios::out | ios::app);
@@ -30,11 +31,19 @@ int main(int argc, char** argv)
 				fileStream = fstream(filePath, ios::in);
 				char byte;
 				fileStream.read(&byte, sizeof(char));
+				bytesRead++;
 				cout << "Reader with priority " << priority << " read " << "\"X\" from file: " << filePath << endl;
 			}
 		}
 		this_thread::sleep_for(chrono::milliseconds(10 * priority));
 	}
 	fileStream.close();
+
+	if (!isWriter) {
+		fstream resultStream("./results.txt", ios::out | ios::app);
+		resultStream << priority << " " << bytesRead << endl;
+		fileStream.close();
+	}
+
 	return 0;
 }
